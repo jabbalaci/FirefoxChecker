@@ -36,8 +36,8 @@ from PySide.QtCore import QThread, Signal
 
 import systray_rc
 
-PROCESS_NAME = 'gedit'  # for testing
-#PROCESS_NAME = 'firefox'
+#PROCESS_NAME = 'gedit'  # for testing
+PROCESS_NAME = 'firefox'
 WAIT = 1.0
 
 
