@@ -1,4 +1,4 @@
-# FirefoxChecker
+# Firefox Checker
 
 A system tray icon indicates whether Firefox is running or not.
 
