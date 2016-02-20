@@ -1,0 +1,9 @@
+* if the checked process (here, Firefox) is running,
+  this program requires 0% CPU, which is very good
+
+* however, if the process (Firefox) is not running, then
+  we need to iterate over every running process, which
+  causes 2-4% CPU usage (on my desktop machine)
+
+  TODO: figure out how to scan running processes once a second
+        in a more efficient way

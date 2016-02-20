@@ -42,11 +42,27 @@ WAIT = 1.0
 
 
 def is_process_running(name):
-    for proc in psutil.process_iter():
-        if proc.name() == name:
+    """
+    Tell if a process is running.
+
+    The proc object is cached so it doesn't need to be looked up every time.
+    """
+    if not hasattr(is_process_running, "proc"):
+        is_process_running.proc = None    # it doesn't exist yet, so init it
+
+    if is_process_running.proc:
+        if is_process_running.proc.is_running():
             return True
-    #
-    return False
+        else:
+            is_process_running.proc = None
+            return False
+    else:
+        for p in psutil.process_iter():
+            if p.name() == name:
+                is_process_running.proc = p
+                return True
+        #
+        return False
 
 
 class FirefoxCheckThread(QThread):
