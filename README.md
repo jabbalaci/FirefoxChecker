@@ -4,7 +4,7 @@ A system tray icon indicates whether Firefox is running or not.
 
 ### Motivation
 
-I use Firefox and I have lots of tabs opened in it (I'm lazy to delete
+I use Firefox and I have lots of tabs opened in it (I'm too lazy to close
 the old ones). As a result, when I close Firefox before shutting down
 my machine, Firefox needs several seconds to fully close (on one of
 my machines it's sometimes 20 seconds). The Firefox window disappears but
