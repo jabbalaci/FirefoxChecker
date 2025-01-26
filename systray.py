@@ -1,5 +1,4 @@
-#!/usr/bin/env python2
-# encoding: utf-8
+#!/usr/bin/env python3
 
 """
 A system tray icon indicates whether Firefox is running or not.
@@ -19,25 +18,23 @@ So I wrote this little program. It puts an icon in the system tray and indicates
 if FF is running. The icon is colored if FF is running, otherwise it turns
 grayscale.
 
-Author: Laszlo Szathmary, alias Jabba Laci, 2016
+Author: Laszlo Szathmary, alias Jabba Laci, 2016, 2025
 Email:  jabba.laci@gmail.com
 GitHub: https://github.com/jabbalaci/FirefoxChecker
 """
-
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
 
 import sys
 from time import sleep
 
 import psutil
-from PySide import QtGui
-from PySide.QtCore import QThread, Signal
+from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QAction, QApplication, QDialog, QMenu, QMessageBox, QSystemTrayIcon
 
 import systray_rc
 
-#PROCESS_NAME = 'gedit'  # for testing
-PROCESS_NAME = 'firefox'
+# PROCESS_NAME = 'gedit'  # for testing
+PROCESS_NAME = "firefox"
 WAIT = 1.0
 
 
@@ -48,7 +45,7 @@ def is_process_running(name):
     The proc object is cached so it doesn't need to be looked up every time.
     """
     if not hasattr(is_process_running, "proc"):
-        is_process_running.proc = None    # it doesn't exist yet, so init it
+        is_process_running.proc = None  # Initialize cache
 
     if is_process_running.proc:
         if is_process_running.proc.is_running():
@@ -61,15 +58,14 @@ def is_process_running(name):
             if p.name() == name:
                 is_process_running.proc = p
                 return True
-        #
         return False
 
 
 class FirefoxCheckThread(QThread):
-    changeIcon = Signal(int)
+    changeIcon = pyqtSignal(int)
 
     def __init__(self, parent):
-        super(FirefoxCheckThread, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.go = True
 
@@ -83,66 +79,64 @@ class FirefoxCheckThread(QThread):
                 self.changeIcon.emit(0)
             else:
                 self.changeIcon.emit(1)
-            #
             sleep(WAIT)
 
 
-class Window(QtGui.QDialog):
+class Window(QDialog):
     def __init__(self):
-        super(Window, self).__init__()
-        self.collectIcons()
+        super().__init__()
+        self.collect_icons()
 
-        self.createActions()
-        self.createTrayIcon()
+        self.create_actions()
+        self.create_tray_icon()
 
-        self.currentIcon = None    # not yet set
+        self.current_icon = None  # Initial state not set
+        self.update_initial_icon()
+        self.tray_icon.show()
+
+        self.firefox_check_thread = FirefoxCheckThread(self)
+        self.firefox_check_thread.changeIcon.connect(self.set_icon)
+        self.firefox_check_thread.start()
+
+    def update_initial_icon(self):
         if is_process_running(PROCESS_NAME):
-            self.setIcon(0)
+            self.set_icon(0)
         else:
-            self.setIcon(1)
-        self.trayIcon.show()
+            self.set_icon(1)
 
-        self.firefoxCheckThread = FirefoxCheckThread(self)
-        self.firefoxCheckThread.start()
-
-        self.firefoxCheckThread.changeIcon.connect(self.setIcon)
-
-    def setIcon(self, index):
-        if index == self.currentIcon:
+    def set_icon(self, index):
+        if index == self.current_icon:
             return
-        # else
         icon = self.icons[index]
-        self.trayIcon.setIcon(icon)
-        self.currentIcon = index
+        self.tray_icon.setIcon(icon)
+        self.current_icon = index
 
-    def collectIcons(self):
-        self.icons = []
-        self.icons.append(QtGui.QIcon(':/images/firefox.svg'))
-        self.icons.append(QtGui.QIcon(':/images/firefox_bw.svg'))
+    def collect_icons(self):
+        self.icons = [QIcon(":/images/firefox.svg"), QIcon(":/images/firefox_bw.svg")]
 
-    def createActions(self):
-        self.quitAction = QtGui.QAction("&Quit", self, triggered=self.myQuit)
+    def create_actions(self):
+        self.quit_action = QAction("&Quit", self, triggered=self.quit_app)
 
-    def myQuit(self):
-        self.firefoxCheckThread.stop()
-        QtGui.qApp.quit()
+    def create_tray_icon(self):
+        self.tray_icon_menu = QMenu(self)
+        self.tray_icon_menu.addAction(self.quit_action)
 
-    def createTrayIcon(self):
-        self.trayIconMenu = QtGui.QMenu(self)
-        self.trayIconMenu.addAction(self.quitAction)
-        self.trayIcon = QtGui.QSystemTrayIcon(self)
-        self.trayIcon.setContextMenu(self.trayIconMenu)
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setContextMenu(self.tray_icon_menu)
+
+    def quit_app(self):
+        self.firefox_check_thread.stop()
+        QApplication.quit()
 
 
-if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
 
-    if not QtGui.QSystemTrayIcon.isSystemTrayAvailable():
-        QtGui.QMessageBox.critical(None, "Systray",
-                "I couldn't detect any system tray on this system.")
+    if not QSystemTrayIcon.isSystemTrayAvailable():
+        QMessageBox.critical(None, "Systray", "No system tray detected on this system.")
         sys.exit(1)
 
-    QtGui.QApplication.setQuitOnLastWindowClosed(False)
+    QApplication.setQuitOnLastWindowClosed(False)
 
     window = Window()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

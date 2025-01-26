@@ -2,6 +2,12 @@
 
 A system tray icon indicates whether Firefox is running or not.
 
+### Changelog
+
+**Jan. 26, 2025**: The original code was slightly modified to work with Python 3 and PyQt5. uv is used as the package manager.
+
+**2016**: Original version, written in Python 2 with PySide.
+
 ### Motivation
 
 I use Firefox and I have lots of tabs opened in it (I'm too lazy to close
@@ -39,7 +45,7 @@ If you want to close it, right click on the icon and click on "Quit".
 
 ### Requirements
 
-* PySide
+* PyQt5
 * psutil
 
 I tried it under Linux with Manjaro and Ubuntu.
